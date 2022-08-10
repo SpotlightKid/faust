@@ -26,11 +26,11 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <climits>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <climits>
 
 #include "compatibility.hh"
 #include "compile.hh"
@@ -653,8 +653,8 @@ string ScalarCompiler::generateBinOp(Tree sig, int opcode, Tree arg1, Tree arg2)
             return generateCacheCode(sig, subst("($0 $1 $2)", c1, gBinOpTable[opcode]->fName, c2, ifloat()));
         }
     } else {
-        if (p0 > p1) c1 = subst("($0)", c1);
-        if (p0 > p2) c2 = subst("($0)", c2);
+        if (p0 >= p1) c1 = subst("($0)", c1);
+        if (p0 >= p2) c2 = subst("($0)", c2);
         return generateCacheCode(sig, subst("$0 $1 $2", c1, gBinOpTable[opcode]->fName, c2));
     }
 }
@@ -1219,13 +1219,13 @@ string ScalarCompiler::generatePrefix(Tree sig, Tree x, Tree e)
 {
     string vperm = getFreshID("pfPerm");
     string vtemp = getFreshID("pfTemp");
-    string type = (getCertifiedSigType(sig)->nature() == kInt) ? "int" : ifloat();
+    string type  = (getCertifiedSigType(sig)->nature() == kInt) ? "int" : ifloat();
 
     fClass->addDeclCode(subst("$0 \t$1;", type, vperm));
     fClass->addInitCode(subst("$0 = $1;", vperm, CS(x)));
 
     fClass->addExecCode(Statement(getConditionCode(sig), subst("$0 \t$1 = $2;", type, vtemp, vperm)));
-    
+
     /*
     string res = CS(e);
     string vname;
@@ -1235,7 +1235,7 @@ string ScalarCompiler::generatePrefix(Tree sig, Tree x, Tree e)
         faustassert(false);
     }
     */
-    
+
     fClass->addExecCode(Statement(getConditionCode(sig), subst("$0 = $1;", vperm, CS(e))));
     return vtemp;
 }
